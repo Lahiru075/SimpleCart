@@ -319,7 +319,7 @@ class HomeScreen extends StatelessWidget {
                       Text(
                         "\$${product.price}",
                         style: const TextStyle(
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w800,
                           fontSize: 18,
                           color: Color(0xFF1A1A1A),
                         ),

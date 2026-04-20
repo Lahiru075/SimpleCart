@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './wish_list_screen.dart';
 import './home_screen.dart';
 import '../widgets/custom_bottom_nav.dart';
 
@@ -14,7 +15,7 @@ class _MainScreenState extends State<MainScreen>{
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const Center(child: Text('Wishlist Screen')),
+    const WishlistScreen(),
     const Center(child: Text('Profile Screen')),
   ];
 
