@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import './home_screen.dart';
 import '../widgets/custom_bottom_nav.dart';
 
 class MainScreen extends StatefulWidget{
@@ -12,7 +13,7 @@ class _MainScreenState extends State<MainScreen>{
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    const Center(child: Text('Home Screen')),
+    const HomeScreen(),
     const Center(child: Text('Wishlist Screen')),
     const Center(child: Text('Profile Screen')),
   ];
