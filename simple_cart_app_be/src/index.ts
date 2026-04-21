@@ -4,6 +4,9 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 dotenv.config();
 
+import productRoute from './routes/product.routes';
+import wishlistRoute from './routes/wishlist.routes';
+
 const SERVER_PORT = process.env.SERVER_PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI as string;
 
@@ -17,6 +20,9 @@ app.use(
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     })
 );
+
+app.use('/api/products', productRoute);
+app.use('/api/wishlist', wishlistRoute);
 
 mongoose
     .connect(MONGO_URI)
