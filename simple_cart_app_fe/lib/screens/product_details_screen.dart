@@ -16,6 +16,19 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   final ApiService _apiService = ApiService();
 
   @override
+  void initState() {
+    super.initState();
+    _checkFavoriteStatus();
+  }
+
+  Future<void> _checkFavoriteStatus() async {
+    bool status = await _apiService.checkWishlistStatus(widget.productId);
+    setState(() {
+      isFavorite = status;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFFCFCFD),

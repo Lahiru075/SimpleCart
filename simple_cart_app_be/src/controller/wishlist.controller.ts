@@ -43,3 +43,16 @@ export const removeFromWishlist = async (req: Request, res: Response) => {
         res.status(500).json({ message: "Error removing product from wishlist", error });
     }
 }
+
+export const checkWishlist = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const item = await Wishlist.findOne({ productId: id });
+
+        res.status(200).json({ isFavorite: !!item });
+
+    } catch (error) {
+        res.status(500).json({ message: "Error checking wishlist", error });
+    }
+}

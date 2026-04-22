@@ -163,12 +163,27 @@ class ApiService {
     }
   }
 
-  Future<bool> removeFromWishlist(String wishlistId) async {
+  Future<bool> removeFromWishlist(String id) async {
     try {
       final response = await http.delete(
-        Uri.parse('$baseUrl/wishlist/$wishlistId'),
+        Uri.parse('$baseUrl/wishlist/$id'),
       );
       return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> checkWishlistStatus(String id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/wishlist/check/$id'),
+      );
+      if (response.statusCode == 200) {
+        Map<String, dynamic> body = jsonDecode(response.body);
+        return body['isFavorite'] ?? false;
+      }
+      return false;
     } catch (e) {
       return false;
     }
