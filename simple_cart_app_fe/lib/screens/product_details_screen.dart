@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:simple_cart_app_fe/services/api_service.dart';
+import '../services/api_service.dart';
 import '../models/product_model.dart';
 
 class ProductDetailsScreen extends StatefulWidget {
@@ -81,8 +81,23 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () =>
-                                    setState(() => isFavorite = !isFavorite),
+                                onTap: () async {
+                                  if (isFavorite) {
+                                    bool success = await _apiService.removeFromWishlist(widget.productId);
+                                    if (success) {
+                                      setState(() {
+                                        isFavorite = false;
+                                      });
+                                    }
+                                  } else {
+                                    bool success = await _apiService.addToWishlist(widget.productId);
+                                    if (success) {
+                                      setState(() {
+                                        isFavorite = true;
+                                      });
+                                    }
+                                  }
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.all(10),
                                   decoration: BoxDecoration(
