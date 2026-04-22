@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/product_model.dart';
+import '../services/api_service.dart';
 
 class WishlistScreen extends StatefulWidget {
   const WishlistScreen({super.key});
@@ -10,22 +11,18 @@ class WishlistScreen extends StatefulWidget {
 
 class _WishlistScreenState extends State<WishlistScreen> {
 
-  List<Product> wishlistedProducts = [
-    Product(
-      id: '1',
-      name: 'Premium Watch',
-      description: 'Timeless elegance',
-      price: 250.0,
-      imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=500&auto=format&fit=crop',
-    ),
-    Product(
-      id: '3',
-      name: 'Leather Bag',
-      description: 'Handcrafted leather',
-      price: 180.0,
-      imageUrl: 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=500&auto=format&fit=crop',
-    ),
-  ];
+  final ApiService _apiService = ApiService();
+  late Future<List<Product>> _wishlistFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadWishlist();
+  }
+
+  void _loadWishlist() {
+    _wishlistFuture = _apiService.fetchWishlist();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,33 +35,58 @@ class _WishlistScreenState extends State<WishlistScreen> {
             // 1. Header
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 20, 24, 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    "My Wishlist",
-                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A)),
-                  ),
-                  Text(
-                    "${wishlistedProducts.length} Items",
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
-                  ),
-                ],
+              child: FutureBuilder<List<Product>>(
+                future: _apiService.fetchWishlist(),
+                builder: (context, snapshot) {
+                  int count = 0;
+
+                  if (snapshot.hasData) count = snapshot.data?.length ?? 0;
+
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        "My Wishlist",
+                        style: TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A)),
+                      ),
+                      Text(
+                        "$count items",
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600], fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
 
             // 2. Wishlist Items List
             Expanded(
-              child: wishlistedProducts.isEmpty 
-                ? _buildEmptyState() 
-                : ListView.builder(
+              child: FutureBuilder<List<Product>>(
+                future: _wishlistFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator(color: Color(0xFF1A1A1A)));
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(child: Text("Error: ${snapshot.error}"));
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return _buildEmptyState();
+                  }
+
+                  final products = snapshot.data!;
+                  return ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
-                    itemCount: wishlistedProducts.length,
+                    itemCount: products.length,
                     itemBuilder: (context, index) {
-                      final product = wishlistedProducts[index];
-                      return _buildWishlistItem(product, index);
-                    },
-                  ),
+                      final product = products[index];
+                      return _buildWishlistItem(product);
+                    }
+                  );
+                },
+              ),
             ),
           ],
         ),
@@ -72,7 +94,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
     );
   }
 
-  Widget _buildWishlistItem(Product product, int index) {
+  Widget _buildWishlistItem(Product product) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(12),
@@ -113,10 +135,14 @@ class _WishlistScreenState extends State<WishlistScreen> {
           ),
           // Remove Button
           GestureDetector(
-            onTap: () {
-              setState(() {
-                wishlistedProducts.removeAt(index);
-              });
+            onTap: () async {
+              bool success = await _apiService.removeFromWishlist(product.id);
+              if (success) {
+                _loadWishlist();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text("Item removed from wishlist")),
+                );
+              }
             },
             child: Container(
               padding: const EdgeInsets.all(8),
