@@ -1,44 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:simple_cart_app_fe/screens/product_details_screen.dart';
+import '../services/api_service.dart';
+import './product_details_screen.dart';
 import '../models/product_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  static List<Product> products = [
-    Product(
-      id: '1',
-      name: 'Premium Watch',
-      description: 'Timeless elegance for every wrist',
-      price: 250.0,
-      imageUrl:
-          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=500&auto=format&fit=crop',
-    ),
-    Product(
-      id: '2',
-      name: 'Wireless Pods',
-      description: 'Immersive sound experience',
-      price: 120.0,
-      imageUrl:
-          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?q=80&w=500&auto=format&fit=crop',
-    ),
-    Product(
-      id: '3',
-      name: 'Leather Bag',
-      description: 'Handcrafted genuine leather',
-      price: 180.0,
-      imageUrl:
-          'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?q=80&w=500&auto=format&fit=crop',
-    ),
-    Product(
-      id: '4',
-      name: 'Smart Shoes',
-      description: 'Step into the future of comfort',
-      price: 90.0,
-      imageUrl:
-          'https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=500&auto=format&fit=crop',
-    ),
-  ];
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+
+
+  final ApiService _apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -54,51 +29,7 @@ class HomeScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Welcome back',
-                              style: TextStyle(
-                                fontSize: 24,
-                                color: Colors.grey[500],
-                                letterSpacing: 0.5,
-                              ),
-                            ),
-                            const Text(
-                              'Lahiru Lakshan',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w800,
-                                color: Color(0xFF1A1A1A),
-                              ),
-                            ),
-                          ],
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.08),
-                                blurRadius: 15,
-                                offset: const Offset(0, 5),
-                              ),
-                            ],
-                          ),
-                          child: const CircleAvatar(
-                            radius: 22,
-                            backgroundImage: NetworkImage(
-                              'https://i.pravatar.cc/150?img=11',
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    _buildHeader(),
                     const SizedBox(height: 25),
                     _buildModernSearchBar(),
                   ],
@@ -125,23 +56,71 @@ class HomeScreen extends StatelessWidget {
 
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  childAspectRatio: 0.72,
-                  crossAxisSpacing: 20,
-                  mainAxisSpacing: 20,
-                ),
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) => _buildLuxuryProductCard(context, products[index]),
-                  childCount: products.length,
-                ),
+              sliver: FutureBuilder<List<Product>>(
+                future: _apiService.fetchProducts(),
+                builder: (context, snapshot) {
+
+                  // loading state during API call
+                  if (snapshot.connectionState == ConnectionState.waiting){
+                    return const SliverFillRemaining(
+                      child: Center(child: CircularProgressIndicator(color: Color(0xFF1A1A1A))),
+                    );
+                  }
+
+                  // if occurs an error during API call
+                  if (snapshot.hasError) {
+                    return SliverToBoxAdapter(
+                      child: Center(child: Text("Error: ${snapshot.error}")),
+                    );
+                  }
+
+                  // if data successfully received from API
+                  if (snapshot.hasData) {
+                    final products = snapshot.data!;
+
+                    if (products.isEmpty) {
+                      return const SliverToBoxAdapter(
+                        child: Center(child: Text("No products found.")),
+                      );
+                    }
+
+                    return SliverGrid(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        mainAxisSpacing: 20,
+                        crossAxisSpacing: 20,
+                        childAspectRatio: 0.72,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) => _buildLuxuryProductCard(context, products[index]),
+                        childCount: products.length,
+                      ),
+                    );
+                  }
+                  return const SliverToBoxAdapter(child: SizedBox());
+                },
               ),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 30)),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Welcome back,', style: TextStyle(fontSize: 14, color: Colors.grey[500])),
+            const Text('Lahiru Lakshan', style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: Color(0xFF1A1A1A))),
+          ],
+        ),
+        const CircleAvatar(radius: 22, backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=11')),
+      ],
     );
   }
 
@@ -239,6 +218,7 @@ class HomeScreen extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.04),
@@ -258,7 +238,7 @@ class HomeScreen extends StatelessWidget {
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: const BorderRadius.vertical(
-                        top: Radius.circular(30),
+                        top: Radius.circular(20),                     
                       ),
                       image: DecorationImage(
                         image: NetworkImage(product.imageUrl),
@@ -347,3 +327,5 @@ class HomeScreen extends StatelessWidget {
     );
   }
 }
+
+
