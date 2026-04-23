@@ -95,9 +95,9 @@ src/
 
 1. Clone the repository
 2. Navigate to the backend folder:
-   ```bash
-   cd simple_cart_app_be
-   ```
+  ```bash
+  cd simple_cart_app_be
+  ```
 3. Install dependencies:
   ```bash
   npm install
@@ -112,11 +112,11 @@ src/
   CLOUDINARY_API_SECRET=your_secret
   ```
 5. Start the server:
-   ```bash
-   npm start
-   # OR
-   npm run dev
-   ```
+  ```bash
+  npm start
+  # OR
+  npm run dev
+  ```
 
 ### 📱 Frontend Setup
 
