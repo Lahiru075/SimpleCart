@@ -29,7 +29,7 @@ A professional, minimalist, and luxury e-commerce application built with **Flutt
 | :--- | :--- |
 | **Frontend** | Flutter, Dart |
 | **Backend** | Node.js, Express.js, TypeScript |
-| **Database** | MongoDB |
+| **Database** | MongoDB Atlas |
 | **Cloud Storage** | Cloudinary |
 | **API Testing** | Postman |
 | **Version Control** | Git, GitHub |
