@@ -24,6 +24,8 @@ app.use(
 app.use('/api/products', productRoute);
 app.use('/api/wishlist', wishlistRoute);
 
+// add mongoDB atlas connection
+
 mongoose
     .connect(MONGO_URI)
     .then(() => {
